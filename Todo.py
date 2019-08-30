@@ -21,6 +21,11 @@ sql = """
 cur = conn.cursor()
 
 
+def login():
+    user = input("Enter user: ")
+    return user
+
+
 def create_table(table_name):
     os.system('cls' if os.name == 'nt' else 'clear')
     sql = f"""
@@ -282,10 +287,11 @@ def list_projects():
 
 if __name__ == '__main__':
     try:
+        user = login()
         arg1 = sys.argv[1]
         if arg1 == '--help':
             show_help_menu()
-        else:
+        elif user == "admin":
             fire.Fire({
                 'do': do,
                 'add': add,
@@ -302,6 +308,18 @@ if __name__ == '__main__':
                 "list_projects": list_projects,
                 "create_table": create_table,
                 "add_column": add_column
+            })
+        else:
+            fire.Fire({
+                'do': do,
+                'add': add,
+                'undo': undo,
+                'delete': delete,
+                'list': show_list,
+                "staff": staff,
+                'list_users': list_users,
+                "who_to_fire": who_to_fire,
+                "list_projects": list_projects
             })
 
     except IndexError:
