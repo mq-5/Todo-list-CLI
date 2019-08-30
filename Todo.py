@@ -18,11 +18,30 @@ sql = """
   )
 """
 
-# sql = """
-#     ALTER TABLE todos
-#     ADD user_id INTEGER
-# """
 cur = conn.cursor()
+
+
+def create_table(table_name):
+    os.system('cls' if os.name == 'nt' else 'clear')
+    sql = f"""
+        CREATE TABLE IF NOT EXISTS {table_name} (
+            id INTEGER PRIMARY KEY
+        )
+    """
+    cur.execute(sql)
+    print(colored("Table {} is created.".format(table_name), "blue"))
+
+
+def add_column(table, column, data_type, constraint=None):
+    os.system('cls' if os.name == 'nt' else 'clear')
+    sql = f"""
+        ALTER TABLE {table}
+        ADD {column} {data_type} {constraint}
+    """
+    cur.execute(sql)
+    conn.commit()
+    print(colored("Column {0} is created for table {1}.".format(
+        column, table), "blue"))
 
 
 def show_help_menu():
@@ -55,6 +74,11 @@ def show_help_menu():
             python3 Todo.py set_user {colored("<todo ID> <user ID>", "yellow")}
         {colored('13. Find out user not assigned to any todo:', 'blue')}
             python3 Todo.py who_to_fire
+        {"-"*100}
+        TO CREATE NEW TABLE
+            python3 Todo.py create_table {colored("<table name>", "yellow")}
+        TO ADD NEW COLUMN TO A TABLE
+            python3 Todo.py add_column {colored("<table name> <column> <data type> <constraint>", "yellow")}
     """)
 
 # TODOS
@@ -62,26 +86,26 @@ def show_help_menu():
 
 def add(body, project_id=None, user_id=None, due=datetime.now().date()):
     os.system('cls' if os.name == 'nt' else 'clear')
-    if project_id:
+    if project_id is not None:
         sql0 = """
             SELECT id FROM projects
             WHERE id = ?
         """
         cur.execute(sql0, (project_id,))
         project = cur.fetchall()
-        if len(project) == 0:
+        if not project:
             print('Project not exist! You may want to add new project.',
                   'See --help', sep="\n")
             return
 
-    if user_id:
+    if user_id is not None:
         sql0 = """
             SELECT id FROM users
             WHERE id = ?
         """
         cur.execute(sql0, (user_id,))
         user = cur.fetchall()
-        if len(user) == 0:
+        if not user:
             print('User not exist! You may want to add new user.',
                   'See --help', sep="\n")
             return
@@ -133,11 +157,11 @@ def show_list(key=None, value=None, status=None, col="due_date", order="ASC"):
 
     results = cur.fetchall()
     print(colored("Todos List:", "green"),
-          colored('*' * 50, 'green'), sep="\n")
+          colored('-' * 100, 'green'), sep="\n")
     for row in results:
         status_color = "green" if row[3] == "incomplete" else "red"
         print(
-            f'{colored("{}.".format(row[0]), "blue")} {row[1]} | {row[2]} | {colored(row[3], status_color)}')
+            f'{colored(row[0], "blue")} {row[1]} | {row[2]} | {colored(row[3], status_color)}')
 
 
 def do(id):
@@ -275,7 +299,9 @@ if __name__ == '__main__':
                 "add_project": add_project,
                 "who_to_fire": who_to_fire,
                 "set_project": update_project,
-                "list_projects": list_projects
+                "list_projects": list_projects,
+                "create_table": create_table,
+                "add_column": add_column
             })
 
     except IndexError:
