@@ -27,19 +27,35 @@ cur = conn.cursor()
 
 def show_help_menu():
     os.system('cls' if os.name == 'nt' else 'clear')
-    print(colored('Todo List Options:', 'blue'))
-    print(colored('*' * 50, 'blue'))
-    print(colored('1. List all todos:', 'blue'))
-    print(colored('\t python3 todos.py list', 'white'))
-    print(colored('2. Add a new todo:', 'blue'))
-    print(colored('\t python3 todos.py add "My Todo Body"', 'white'))
-    print(colored('3. Delete a todo:', 'blue'))
-    print(colored('\t python3 todos.py delete 1', 'white'))
-    print(colored('4. Mark a todo complete:', 'blue'))
-    print(colored('\t python3 todos.py do 1', 'white'))
-    print(colored('5. Mark a todo uncomplete:', 'blue'))
-    print(colored('\t python3 todos.py undo 1', 'white'))
-    print(colored('-' * 100, 'green'))
+    print(f"""
+        {colored('{:-^100}'.format("TODOS OPTIONS"), 'blue')}
+        {colored('1. List all todos:', 'blue')}
+            python3 Todo.py list {colored('<column name> <column value> <status> <sort by> <ASD or DESC>', "yellow")}
+        {colored('2. Add a new todo:', 'blue')}
+            python3 Todo.py add {colored("<todo body> <project ID> <user ID> <due date>", "yellow")}
+        {colored('3. Delete a todo:', 'blue')}
+            python3 Todo.py delete {colored("<todo ID>", "yellow")}
+        {colored('4. Mark a todo complete:', 'blue')}
+            python3 Todo.py do {colored("<todo ID>", "yellow")}
+        {colored('5. Mark a todo incomplete:', 'blue')}
+            python3 Todo.py undo {colored("<todo ID>", "yellow")}
+        {colored('6. Add new user:', 'blue')}
+            python3 Todo.py add_user {colored("<user name> <user email>", "yellow")}
+        {colored('7. List all users:', 'blue')}
+            python3 Todo.py list_users
+        {colored('8. List working staff:', 'blue')}
+            python3 Todo.py staff
+        {colored('9. Add new project:', 'blue')}
+            python3 Todo.py add_project {colored("<project name>", "yellow")}
+        {colored('10. List all projects:', 'blue')}
+            python3 Todo.py list_projects
+        {colored('11. Update project for current todo:', 'blue')}
+            python3 Todo.py set_project {colored("<todo ID> <project ID>", "yellow")}
+        {colored('12. Update user for current todo:', 'blue')}
+            python3 Todo.py set_user {colored("<todo ID> <user ID>", "yellow")}
+        {colored('13. Find out user not assigned to any todo:', 'blue')}
+            python3 Todo.py who_to_fire
+    """)
 
 # TODOS
 
@@ -95,8 +111,9 @@ def show_list(key=None, value=None, status=None, col="due_date", order="ASC"):
     print(colored("Todos List:", "green"),
           colored('*' * 50, 'green'), sep="\n")
     for row in results:
+        status_color = "green" if row[3] == "incomplete" else "red"
         print(
-            f'{colored("{}.".format(row[0]), "red")} {row[1]} | {row[2]} | {row[3]}')
+            f'{colored("{}.".format(row[0]), "blue")} {row[1]} | {row[2]} | {colored(row[3], status_color)}')
 
 
 def do(id):
@@ -144,8 +161,8 @@ def update_user(todo, user):
     conn.commit()
     print("User {} is set for todo {}".format(user, todo))
 
-# USER
 
+# USER
 
 def add_user(name, email):
     sql = """
@@ -174,7 +191,7 @@ def staff():
     """
     cur.execute(sql)
     results = cur.fetchall()
-    print('{:-^50}'.format("PROJECTS LIST"))
+    print('{:-^50}'.format("STAFF LIST"))
     for row in results:
         print(f'Project {row[2]} - {row[0]} | User {row[1]} {row[3]}')
 
@@ -189,11 +206,30 @@ def add_project(name):
 
 
 def who_to_fire():
-    pass
+    os.system('cls' if os.name == 'nt' else 'clear')
+    sql = """
+        SELECT DISTINCT users.id, users.name, todos.project_id
+        FROM users LEFT JOIN todos
+        ON users.id = todos.user_id
+        WHERE todos.project_id IS NULL
+    """
+    cur.execute(sql)
+    results = cur.fetchall()
+    print('{:-^50}'.format("FIRE LIST"))
+    for row in results:
+        print(f'{row[0]}. {colored(row[1], "blue")} has no task')
 
 
 def list_projects():
-    pass
+    os.system('cls' if os.name == 'nt' else 'clear')
+    sql = """
+        SELECT * FROM projects
+    """
+    cur.execute(sql)
+    results = cur.fetchall()
+    print('{:-^50}'.format("PROJECTS LIST"))
+    for row in results:
+        print(f'{colored(row[0], "blue")}. {row[1]}')
 
 
 if __name__ == '__main__':
