@@ -97,9 +97,9 @@ def add(body, project_id=None, user_id=None, due=datetime.now().date()):
             WHERE id = ?
         """
         cur.execute(sql0, (project_id,))
-        project = cur.fetchall()
-        if not project:
-            print('Project not exist! You may want to add new project.',
+        project = cur.fetchone()
+        if project is None:
+            print(colored('Project not exist! You may want to add new project.', "red"),
                   'See --help', sep="\n")
             return
 
@@ -109,9 +109,9 @@ def add(body, project_id=None, user_id=None, due=datetime.now().date()):
             WHERE id = ?
         """
         cur.execute(sql0, (user_id,))
-        user = cur.fetchall()
-        if not user:
-            print('User not exist! You may want to add new user.',
+        user = cur.fetchone()
+        if user is None:
+            print(colored('User not exist! You may want to add new user.', "red"),
                   'See --help', sep="\n")
             return
 
@@ -171,6 +171,16 @@ def show_list(key=None, value=None, status=None, col="due_date", order="ASC"):
 
 def do(id):
     os.system('cls' if os.name == 'nt' else 'clear')
+    sql0 = """
+        SELECT id FROM todos
+        WHERE id = ?
+    """
+    cur.execute(sql0, (id,))
+    todo = cur.fetchone()
+    if todo is None:
+        print(colored('Todo not exist!', "red"), 'See --help', sep="\n")
+        return
+
     sql = """
         UPDATE todos
         SET status = "complete"
@@ -183,6 +193,16 @@ def do(id):
 
 def undo(id):
     os.system('cls' if os.name == 'nt' else 'clear')
+    sql0 = """
+        SELECT id FROM todos
+        WHERE id = ?
+    """
+    cur.execute(sql0, (id,))
+    todo = cur.fetchone()
+    if todo is None:
+        print(colored('Todo not exist!', "red"), 'See --help', sep="\n")
+        return
+
     sql = """
         UPDATE todos
         SET status = "incomplete"
@@ -194,6 +214,28 @@ def undo(id):
 
 
 def update_project(todo, project):
+    os.system('cls' if os.name == 'nt' else 'clear')
+    sql0 = """
+        SELECT id FROM todos
+        WHERE id = ?
+    """
+    cur.execute(sql0, (todo,))
+    todo = cur.fetchone()
+    if todo is None:
+        print(colored('Todo not exist!', "red"), 'See --help', sep="\n")
+        return
+
+    sql1 = """
+        SELECT id FROM projects
+        WHERE id = ?
+    """
+    cur.execute(sql1, (project,))
+    project = cur.fetchone()
+    if project is None:
+        print(colored('Project not exist! You may want to add new project.', "red"),
+              'See --help', sep="\n")
+        return
+
     sql = """
         UPDATE todos
         SET project_id = ?
@@ -205,6 +247,28 @@ def update_project(todo, project):
 
 
 def update_user(todo, user):
+    os.system('cls' if os.name == 'nt' else 'clear')
+    sql0 = """
+        SELECT id FROM todos
+        WHERE id = ?
+    """
+    cur.execute(sql0, (todo,))
+    todo = cur.fetchone()
+    if not todo:
+        print(colored('Todo not exist!', "red"), 'See --help', sep="\n")
+        return
+
+    sql0 = """
+        SELECT id FROM users
+        WHERE id = ?
+    """
+    cur.execute(sql0, (user,))
+    user = cur.fetchone()
+    if user is None:
+        print(colored('User not exist! You may want to add new user.', "red"),
+              'See --help', sep="\n")
+        return
+
     sql = """
         UPDATE todos
         SET user_id = ?
