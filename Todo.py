@@ -62,6 +62,30 @@ def show_help_menu():
 
 def add(body, project_id=None, user_id=None, due=datetime.now().date()):
     os.system('cls' if os.name == 'nt' else 'clear')
+    if project_id:
+        sql0 = """
+            SELECT id FROM projects
+            WHERE id = ?
+        """
+        cur.execute(sql0, (project_id,))
+        project = cur.fetchall()
+        if len(project) == 0:
+            print('Project not exist! You may want to add new project.',
+                  'See --help', sep="\n")
+            return
+
+    if user_id:
+        sql0 = """
+            SELECT id FROM users
+            WHERE id = ?
+        """
+        cur.execute(sql0, (user_id,))
+        user = cur.fetchall()
+        if len(user) == 0:
+            print('User not exist! You may want to add new user.',
+                  'See --help', sep="\n")
+            return
+
     print(colored("Adding todo: ", "yellow"), body)
     sql = """
         INSERT INTO todos
